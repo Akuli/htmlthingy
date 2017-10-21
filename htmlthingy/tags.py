@@ -54,6 +54,10 @@ def image(url, style=''):
     :param style: CSS for this image, e.g. ``'float: right;'``. Below \
                   ``image: url`` in the markup.
     """
+    style = style.strip()
+    if not style:
+        # no float stuff, so make things behave consistently
+        return '<p><img src="%s" /></p>' % url
     return '<img src="%s" style="%s" />' % (url, style)
 
 
