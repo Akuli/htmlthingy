@@ -34,7 +34,7 @@ This is a test.
 
 **build.py**:
 
-```python3
+```python
 import htmlthingy
 
 builder = htmlthingy.Builder()
@@ -94,7 +94,7 @@ build file and try it out.
 
 **build.py**:
 
-```python3
+```python
 import htmlthingy
 
 
