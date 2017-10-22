@@ -175,6 +175,17 @@ class MarkupConverter:
             yield from self.convert(markup, filename)
             yield '</div>'
 
+        @self.add_multiliner(r'^(gray|red)box:(.*)\n')
+        def box_handler(match, filename):
+            content = textwrap.dedent(match.string[match.end():])
+            yield '<div class="box %sbox">' % match.group(1)
+            if match.group(2).strip():
+                yield '<h2>'
+                yield from self.convert_chunk(match.group(2), filename)
+                yield '</h2>'
+            yield from self.convert(content)
+            yield '</div>'
+
         @self.add_multiliner(r'^image:\s*(\S.*)\n')
         def image_handler(match, filename):
             css = match.string[match.end():]
