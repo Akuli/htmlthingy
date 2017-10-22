@@ -8,12 +8,12 @@ import pygments.lexers
 
 def _id_ify(string):
     r"""
-    >>> _id_ify("Hello There!")
+    >>> _id_ify("Hello        There!")
     'hello-there'
     >>> _id_ify("??\t???!?!?!?!??????????")
     '3f3f093f3f'
     """ 
-    nice_id = re.sub('[\W_]','-', string).strip('-').lower()
+    nice_id = re.sub('[\W_]+', '-', string).strip('-').lower()
     if nice_id:
         return nice_id
     return ''.join(map('{:02x}'.format, string.encode('utf-8')))[:10]
@@ -119,7 +119,13 @@ ample page <https://help.farbox.com/pygments.html>`_.
     There's no example because the HTML created by Pygments looks kind
     of messy when viewed as plain text.
     """
-    lexer = pygments.lexers.get_lexer_by_name(lexer_name)
+    if lexer_name == 'python3' and code.startswith('>>> '):
+        lexer = pygments.lexers.PythonConsoleLexer(python3=True)
+    elif lexer_name == 'python' and code.startswith('>>> '):
+        lexer = pygments.lexers.PythonConsoleLexer(python3=False)
+    else:
+        lexer = pygments.lexers.get_lexer_by_name(lexer_name)
+
     formatter = pygments.formatters.HtmlFormatter(
         style=pygments_style, noclasses=True)
     return pygments.highlight(code, lexer, formatter)
