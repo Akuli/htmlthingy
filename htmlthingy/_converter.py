@@ -163,9 +163,18 @@ class MarkupConverter:
             assert markup, "blank line after (...)"
             content = ''.join(self.convert(markup, filename)).lstrip()
 
-            regex = re.compile(r'^<(\w+)')
+            regex = re.compile(r'^<(\w+)')      # fuck stackoverflow
             assert regex.search(content) is not None, "cannot use (...) here"
-            yield regex.sub(r'<\1 id="%s"' % match.group(1), content)
+            yield regex.sub(r'<\1 id="%s"' % match.group(1), content, count=1)
+
+        @self.add_multiliner(r'^indent:\n')
+        def indent_handler(match, filename):
+            markup = textwrap.dedent(match.string[match.end():])
+            print(markup)
+            assert markup, "blank line after 'indent:'"
+            yield '<div class="indent">'
+            yield from self.convert(markup, filename)
+            yield '</div>'
 
         @self.add_multiliner(r'^image:\s*(\S.*)\n')
         def image_handler(match, filename):
