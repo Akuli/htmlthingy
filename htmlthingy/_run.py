@@ -7,20 +7,19 @@ import string
 
 import tqdm
 
-from htmlthingy import MarkupConverter
-
-
-simple_tqdm = functools.partial(tqdm.tqdm, bar_format=(
-    '{desc:35} |{bar}| {n_fmt}/{total_fmt}, {percentage:3.0f}%'))
+import htmlthingy
 
 
 class Builder:
 
     def __init__(self, title=None):
-        self.converter = MarkupConverter()
+        self.converter = htmlthingy.MarkupConverter()
         self.infiles = sorted(glob.glob('*.txt'))
         self.outputdir = 'html'
         self.additional_files = glob.glob('*.css') + glob.glob('*.js')
+        if os.path.isdir('images'):
+            self.additional_files.extend(
+                glob.glob('images/*.png') + glob.glob('images/*.gif'))
 
     def infile2outfile(self, txtfile):
         """Return a HTML file path based on a text file path."""
@@ -36,15 +35,14 @@ class Builder:
             shutil.rmtree(self.outputdir)
         os.makedirs(self.outputdir)
 
-        pbar = simple_tqdm(self.infiles, desc="Processing text files...")
-        for txtfile in pbar:
-            pbar.set_postfix({'file': txtfile})
+        for txtfile in htmlthingy.progressbar(self.infiles,
+                                              "Processing files"):
+            htmlfile = self.infile2outfile(txtfile)
 
             with open(txtfile, 'r', encoding='utf-8') as file:
                 content = file.read()
 
-            with open(self.infile2outfile(txtfile), 'x',
-                      encoding='utf-8') as file:
+            with open(htmlfile, 'x', encoding='utf-8') as file:
                 file.write('<!DOCTYPE html>\n')
                 file.write('<html>\n')
 
@@ -54,7 +52,7 @@ class Builder:
                     copied_path = os.path.join(self.outputdir, 'style.css')
                     relative = os.path.relpath(
                         copied_path,
-                        os.path.dirname(self.infile2outfile(txtfile)))
+                        os.path.dirname(htmlfile))
                     file.write('<link rel="stylesheet" href="%s">\n'
                                % relative.replace(os.sep, '/'))
                 file.write('<title>%s</title>\n' % self.get_title(txtfile))
@@ -64,7 +62,7 @@ class Builder:
                 file.write('<body>\n')
 
                 file.write('<div id="content">\n')
-                for chunk in self.converter.convert(content):
+                for chunk in self.converter.convert(content, txtfile):
                     file.write(chunk)
                 file.write('</div>\n')
 
@@ -76,11 +74,8 @@ class Builder:
                 file.write('</html>\n')
 
         if self.additional_files:
-            pbar = simple_tqdm(self.additional_files,
-                               desc="Copying additional files...")
-            for source in pbar:
-                pbar.set_postfix({'file': source})
-
+            for source in htmlthingy.progressbar(
+                    self.additional_files, "Copying additional files"):
                 dest = os.path.join(self.outputdir, source)
                 if os.path.isdir(source):
                     shutil.copytree(source, dest)

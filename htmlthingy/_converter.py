@@ -84,7 +84,7 @@ class MarkupConverter:
             elif chunk.strip():
                 yield '<p>'
                 yield from self.convert_chunk(chunk, filename)
-                yield '</p>'
+                yield '</p>\n\n'
 
     def convert_chunk(self, chunk, filename):
         """
@@ -103,7 +103,7 @@ class MarkupConverter:
                 break
 
             firstmatch = min(matches, key=operator.methodcaller('start'))
-            yield chunk[index:firstmatch.start()].lstrip('\n')
+            yield chunk[index:firstmatch.start()]
             yield self._inliners[firstmatch.re](firstmatch, filename)
             chunk = chunk[firstmatch.end():]
 
@@ -183,6 +183,24 @@ class MarkupConverter:
             yield tags.multiline_code(code, match.group(1).strip() or 'text',
                                       self.pygments_style)
 
+        @self.add_multiliner(r'^\* ')
+        def list_handler(match, filename):
+            yield '<ul>'
+            for item in re.split(r'\n\* ', match.string[match.end():]):
+                yield '<li>'
+                yield from self.convert_chunk(item, filename)
+                yield '</li>'
+            yield '</ul>'
+
+        @self.add_multiliner(r'^1\. ')
+        def numbered_list_handler(match, filename):
+            yield '<ol>'
+            for item in re.split(r'\n\d\. ', match.string[match.end():]):
+                yield '<li>'
+                yield from self.convert_chunk(item, filename)
+                yield '</li>'
+            yield '</ol>'
+
         @self.add_inliner(r'\B\*\*(.+?)\*\*\B')
         def bold_handler(match, filename):
             content = ''.join(self.convert_chunk(match.group(1), filename))
@@ -202,10 +220,14 @@ class MarkupConverter:
         def code_handler(match, filename):
             return tags.inline_code(match.group(1))
 
-        @self.add_inliner(r'\[(.+?)\]\((.+?)\)')
+        @self.add_inliner(r'\[([\S\s]+?)\]\((.+?)\)')
         def link_handler(match, filename):
             content = ''.join(self.convert_chunk(match.group(1), filename))
             return tags.link(content, match.group(2))
+
+        @self.add_inliner(r'\s--\s')
+        def en_dash(match, filename):
+            return ' \N{EN DASH} '
 
 
 if __name__ == '__main__':
