@@ -61,14 +61,14 @@ class Builder:
 
                 file.write('<body>\n')
 
+                sidebar = self.get_sidebar_content(txtfile)
+                if sidebar is not None:
+                    file.write('<div id="sidebar">%s</div>\n' % sidebar)
+
                 file.write('<div id="content">\n')
                 for chunk in self.converter.convert(content, txtfile):
                     file.write(chunk)
                 file.write('</div>\n')
-
-                sidebar = self.get_sidebar_content(txtfile)
-                if sidebar is not None:
-                    file.write('<div id="sidebar">%s</div>\n' % sidebar)
 
                 file.write('</body>\n')
                 file.write('</html>\n')
