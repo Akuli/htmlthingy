@@ -170,7 +170,6 @@ class MarkupConverter:
         @self.add_multiliner(r'^indent:\n')
         def indent_handler(match, filename):
             markup = textwrap.dedent(match.string[match.end():])
-            print(markup)
             assert markup, "blank line after 'indent:'"
             yield '<div class="indent">'
             yield from self.convert(markup, filename)
