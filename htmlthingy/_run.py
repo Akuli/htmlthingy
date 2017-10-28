@@ -32,6 +32,7 @@ class Builder:
     def run(self):
         # TODO: cache stuff somehow
         if os.path.exists(self.outputdir):
+            print("Removing '%s' directory..." % self.outputdir)
             shutil.rmtree(self.outputdir)
         os.makedirs(self.outputdir)
 

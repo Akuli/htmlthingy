@@ -10,16 +10,11 @@ from htmlthingy._run import Builder
 import tqdm
 
 
-def _truncate(filename):
-    if len(filename) <= 15:
-        return filename
-    return filename[:12] + '...'
-
-
 def progressbar(filelist, message):
+    length = max(50-len(message), 0)
     pbar = tqdm.tqdm(
-        filelist, desc=message,
-        bar_format='{desc:24}|{bar}| {n_fmt}/{total_fmt}{postfix:22}')
+        filelist, bar_format=('%s{postfix:%d.%d} |{bar}|'
+                              % (message, length, length)))
     for file in pbar:
-        pbar.set_postfix({'file': _truncate(file)})
+        pbar.set_postfix({'file': file})
         yield file
