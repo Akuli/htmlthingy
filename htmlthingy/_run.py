@@ -9,6 +9,10 @@ import tqdm
 
 import htmlthingy
 
+# http://preservationtutorial.library.cornell.edu/presentation/table7-1.html
+_IMAGE_EXTENSIONS = ['tif', 'tiff', 'gif', 'jpeg', 'jpg', 'jif', 'jfif',
+                     'jp2', 'jpx', 'j2k', 'j2c', 'fpx', 'pcd', 'png']
+
 
 class Builder:
 
@@ -18,8 +22,8 @@ class Builder:
         self.outputdir = 'html'
         self.additional_files = glob.glob('*.css') + glob.glob('*.js')
         if os.path.isdir('images'):
-            self.additional_files.extend(
-                glob.glob('images/*.png') + glob.glob('images/*.gif'))
+            for ext in _IMAGE_EXTENSIONS:
+                self.additional_files.extend(glob.glob('images/*.%s' % ext))
 
     def infile2outfile(self, txtfile):
         """Return a HTML file path based on a text file path."""

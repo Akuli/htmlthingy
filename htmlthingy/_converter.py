@@ -175,6 +175,13 @@ class MarkupConverter:
             yield from self.convert(markup, filename)
             yield '</div>'
 
+        # prevent adding a <p> tag
+        @self.add_multiliner(r'^noparagraph:\n')
+        def no_paragraph_handler(match, filename):
+            markup = textwrap.dedent(match.string[match.end():])
+            assert markup, "blank line after 'noparagraph:'"
+            yield from self.convert(markup, filename)
+
         @self.add_multiliner(r'^(gray|red)box:(.*)\n')
         def box_handler(match, filename):
             content = textwrap.dedent(match.string[match.end():])
