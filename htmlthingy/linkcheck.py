@@ -1,8 +1,8 @@
 """Check links in HTML files."""
-# TODO: don't break if the files are in subdirectories?
 
 import glob
 import os
+import pathlib
 import re
 
 import bs4
@@ -11,12 +11,12 @@ from htmlthingy import progressbar
 
 
 def run(htmldir):
-    htmlfiles = glob.glob(os.path.join(glob.escape(htmldir), '*.html'))
+    htmlfiles = list(map(str, pathlib.Path(htmldir).rglob('*.html')))
     valid_targets = set()
     links = {}      # {filename: linklist}
 
     for filename in progressbar(htmlfiles, "Checking links"):
-        valid_targets.add(os.path.basename(filename))
+        valid_targets.add(os.path.relpath(filename, htmldir))
 
         with open(filename, 'r', encoding='utf-8') as file:
             soup = bs4.BeautifulSoup(file.read(), 'html.parser')
