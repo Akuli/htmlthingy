@@ -30,8 +30,7 @@ class Builder:
         assert not os.path.isabs(txtfile), (
             "expected relative path, got '%s'" % txtfile)
         basename_ish = os.path.splitext(txtfile)[0] + '.html'  # may contain /
-        result = os.path.join(self.outputdir, basename_ish)
-        return result.replace(os.sep, '/')
+        return os.path.join(self.outputdir, basename_ish)
 
     def run(self):
         # TODO: cache stuff somehow
@@ -42,11 +41,12 @@ class Builder:
 
         for txtfile in htmlthingy.progressbar(self.infiles,
                                               "Processing files"):
-            htmlfile = self.infile2outfile(txtfile)
+            htmlfile = self.infile2outfile(txtfile).replace(os.sep, '/')
 
             with open(txtfile, 'r', encoding='utf-8') as file:
                 content = file.read()
 
+            os.makedirs(os.path.dirname(htmlfile), exist_ok=True)
             with open(htmlfile, 'x', encoding='utf-8') as file:
                 file.write('<!DOCTYPE html>\n')
                 file.write('<html>\n')
