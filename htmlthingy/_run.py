@@ -93,7 +93,7 @@ class Builder:
         # this is lol
         with open(txtfile, 'r', encoding='utf-8') as file:
             firstline = file.readline()
-        return firstline.strip(string.whitespace + string.punctuation)
+        return firstline.lstrip(string.whitespace + string.punctuation)
 
     def get_head_extras(self, txtfile):
         return ''
