@@ -1,10 +1,6 @@
 import operator
 import re
-import shlex
 import textwrap
-
-import pygments.lexers
-import pygments.formatters
 
 from htmlthingy import tags
 
@@ -194,7 +190,7 @@ class MarkupConverter:
             yield '</div>'
 
         @self.add_multiliner(r'^floatingbox:(.*)\n')
-        def box_handler(match, filename):
+        def floating_box_handler(match, filename):
             content = textwrap.dedent(match.string[match.end():])
             yield '<div class="floatingbox">'
             if match.group(1).strip():
@@ -243,7 +239,7 @@ class MarkupConverter:
             content = ''.join(self.convert_chunk(match.group(1), filename))
             return tags.bold(content)
 
-        @self.add_inliner('\B\*([^\*].*?)\*\B')
+        @self.add_inliner(r'\B\*([^\*].*?)\*\B')
         def italic_handler(match, filename):
             content = ''.join(self.convert_chunk(match.group(1), filename))
             return tags.italic(content)
@@ -254,7 +250,7 @@ class MarkupConverter:
             return tags.underline(content)
 
         @self.add_inliner(r'``(.+?)``')
-        def code_handler(match, filename):
+        def inline_code_handler(match, filename):
             return tags.inline_code(match.group(1))
 
         @self.add_inliner(r'\[([\S\s]+?)\]\((.+?)\)')
