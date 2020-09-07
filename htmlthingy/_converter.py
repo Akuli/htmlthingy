@@ -186,7 +186,7 @@ class MarkupConverter:
                 yield '<h2>'
                 yield from self.convert_chunk(match.group(2), filename)
                 yield '</h2>'
-            yield from self.convert(content)
+            yield from self.convert(content, filename)
             yield '</div>'
 
         @self.add_multiliner(r'^floatingbox:(.*)\n')
@@ -197,7 +197,7 @@ class MarkupConverter:
                 yield '<h2>'
                 yield from self.convert_chunk(match.group(1), filename)
                 yield '</h2>'
-            yield from self.convert(content)
+            yield from self.convert(content, filename)
             yield '</div>'
 
         @self.add_multiliner(r'^image:\s*(\S.*)\n')
