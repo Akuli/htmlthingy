@@ -1,15 +1,7 @@
-import operator
 import re
 import textwrap
 
 from htmlthingy import tags
-
-
-def _match_after(regex, the_string, startpos):
-    for match in regex.finditer(the_string):
-        if match.start() >= startpos:
-            return match
-    return None
 
 
 class MarkupConverter:
@@ -72,7 +64,7 @@ class MarkupConverter:
                        for regex in self._multiliners} - {None}
             if len(matches) > 1:
                 # TODO: better error
-                raise ValueError("ambiguous markup:\n\n" + chunk)
+                raise ValueError(f"ambiguous markup in {filename}\n\n{chunk}")
 
             if matches:
                 [match] = matches
@@ -90,18 +82,23 @@ class MarkupConverter:
         Use this instead of :meth:`convert` if you want to parse nested
         markup, like ``**a [link](something) inside bold**``.
         """
-        index = 0
-        while index < len(chunk):
-            matches = {_match_after(regex, chunk, index)
+        while chunk:
+            matches = {regex.search(chunk)
                        for regex in self._inliners} - {None}
             if not matches:
-                yield chunk[index:]
+                yield chunk
                 break
 
-            firstmatch = min(matches, key=operator.methodcaller('start'))
-            yield chunk[index:firstmatch.start()]
-            yield self._inliners[firstmatch.re](firstmatch, filename)
-            chunk = chunk[firstmatch.end():]
+            min_start = min(m.start() for m in matches)
+            firsts = [m for m in matches if m.start() == min_start]
+            if len(firsts) > 1:
+                # TODO: better error
+                raise ValueError(f"ambiguous markup in {filename}\n\n{chunk[min_start:]}")
+
+            match = firsts[0]
+            yield chunk[:min_start]
+            yield self._inliners[match.re](match, filename)
+            chunk = chunk[match.end():]
 
     def add_inliner(self, regex):
         """Add a new non-multiline processor function.
